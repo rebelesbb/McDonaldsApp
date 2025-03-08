@@ -1,4 +1,6 @@
-﻿using Microsoft.Data.SqlClient;
+﻿using McApp.domain;
+using McApp.domain.validators;
+using Microsoft.Data.SqlClient;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -11,24 +13,28 @@ namespace McApp.repositoy;
 
 public class EmployeesRepository
 {
-    SqlConnection connection;
-    private string _connectionString;
+    private readonly EmployeeValidator validator;
+    private readonly SqlConnection connection;
     private SqlDataAdapter dataAdapter;
+    private readonly DataSet dataSet;
 
-    public EmployeesRepository(string connectionString)
+    public EmployeesRepository(string connectionString, DataSet dataSet)
     {
-        _connectionString = connectionString;
+        validator = new EmployeeValidator();
         try
         {
-            this.connection = new SqlConnection(_connectionString);
+            this.connection = new SqlConnection(connectionString);
             InitializeDataAdapter();
         }
         catch (Exception e)
         {
             MessageBox.Show(e.Message);
         }
+
+        this.dataSet = dataSet;
     }
 
+   
     private void InitializeDataAdapter()
     {
 
@@ -83,8 +89,6 @@ public class EmployeesRepository
         int identityValue = 0;
         string query = $"SELECT IDENT_CURRENT('Angajati')";
 
-        
-
         using (SqlCommand command = new SqlCommand(query, connection))
         {
             this.connection.Open();
@@ -99,61 +103,70 @@ public class EmployeesRepository
 
         return identityValue;
     }
-    public void LoadAllEmployees(DataSet dataSet)
+    public void LoadAllEmployees()
     {
-        dataAdapter.Fill(dataSet, "Angajati");
+        dataAdapter.Fill(this.dataSet, "Angajati");
     }
 
-    public void Save(DataSet dataSet, string lastname, string firstname, int locationId, string phoneNumber,
-        string position, int salary, DateTime hireDate)
+    public void Save(Employee employee)
     {
+        validator.ValidateEmployee(employee);
 
-        DataTable employeesTable = dataSet.Tables["Angajati"];
-        DataRow newRow = employeesTable.NewRow();
-        newRow["nume"] = lastname;
-        newRow["prenume"] = firstname;
-        newRow["cod_locatie"] = locationId;
-        newRow["numar_telefon"] = phoneNumber;
-        newRow["functie"] = position;
-        newRow["salariu"] = salary;
-        newRow["data_angajare"] = hireDate.Date;
-        employeesTable.Rows.Add(newRow);
-
-        dataAdapter.Update(dataSet, "Angajati");
-        newRow["cod_angajat"] = GetIdentity();
-    }
-
-    public void Delete(DataSet dataSet, int employeeId)
-    {
-        DataTable employeesTable = dataSet.Tables["Angajati"];
-        DataRow[] rows = employeesTable.Select($"cod_angajat = {employeeId}");
-        if (rows.Length > 0)
+        DataTable? employeesTable = this.dataSet.Tables["Angajati"];
+        if (employeesTable != null)
         {
-            rows[0].Delete();  
-            dataAdapter.Update(dataSet, "Angajati"); 
+            DataRow newRow = employeesTable.NewRow();
+            newRow["nume"] = employee.Lastname;
+            newRow["prenume"] = employee.Firstname;
+            newRow["cod_locatie"] = employee.LocationId;
+            newRow["numar_telefon"] = employee.PhoneNumber;
+            newRow["functie"] = employee.Position;
+            newRow["salariu"] = employee.Salary;
+            newRow["data_angajare"] = employee.HireDate.Date;
+            employeesTable.Rows.Add(newRow);
+
+            dataAdapter.Update(this.dataSet, "Angajati");
+            newRow["cod_angajat"] = GetIdentity();
         }
     }
 
-    public void Update(DataSet dataSet, int employeeId, string lastname, string firstname, int locationId, string phoneNumber,
-        string position, int salary, DateTime hireDate)
+    public void Delete(int employeeId)
     {
-        DataTable employeesTable = dataSet.Tables["Angajati"];
+        DataTable? employeesTable = this.dataSet.Tables["Angajati"];
+        if (employeesTable != null)
+        {
+            DataRow[] rows = employeesTable.Select($"cod_angajat = {employeeId}");
+            if (rows.Length > 0)
+            {
+                rows[0].Delete();
+                dataAdapter.Update(this.dataSet, "Angajati");
+            }
+        }
+    }
+
+    public void Update(Employee employee)
+    {
+        validator.ValidateEmployee(employee);
+
+        DataTable? employeesTable = this.dataSet.Tables["Angajati"];
 
         // Find the row to update
-        DataRow[] rows = employeesTable.Select($"cod_angajat = {employeeId}");
-        if (rows.Length > 0)
+        if (employeesTable != null)
         {
-            DataRow row = rows[0];
-            row["cod_angajat"] = employeeId;
-            row["nume"] = lastname;
-            row["prenume"] = firstname;
-            row["cod_locatie"] = locationId;
-            row["numar_telefon"] = phoneNumber;
-            row["functie"] = position;
-            row["salariu"] = salary;
-            row["data_angajare"] = hireDate;
+            DataRow[] rows = employeesTable.Select($"cod_angajat = {employee.Id}");
+            if (rows.Length > 0)
+            {
+                DataRow row = rows[0];
+                row["nume"] = employee.Lastname;
+                row["prenume"] = employee.Firstname;
+                row["cod_locatie"] = employee.LocationId;
+                row["numar_telefon"] = employee.PhoneNumber;
+                row["functie"] = employee.Position;
+                row["salariu"] = employee.Salary;
+                row["data_angajare"] = employee.HireDate.Date;
 
-            dataAdapter.Update(dataSet, "Angajati"); // Apply changes to database
+                dataAdapter.Update(this.dataSet, "Angajati");
+            }
         }
     }
 

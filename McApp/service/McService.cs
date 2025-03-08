@@ -1,4 +1,5 @@
-﻿using McApp.repositoy;
+﻿using McApp.domain;
+using McApp.repositoy;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -10,8 +11,8 @@ namespace McApp.service
 {   
     public class McService
     {
-        private LocationsRepository locationsRepository;
-        private EmployeesRepository employeesRepository;
+        private readonly LocationsRepository locationsRepository;
+        private readonly EmployeesRepository employeesRepository;
 
         public McService(LocationsRepository locationsRepository, EmployeesRepository employeesRepository)
         {
@@ -20,35 +21,40 @@ namespace McApp.service
         }
 
 
-        public void LoadAllLocations(DataSet dataSet)
+        public void LoadAllLocations()
         {
-            locationsRepository.LoadAllLocations(dataSet);
+            locationsRepository.LoadAllLocations();
         }
 
 
-        public void LoadAllEmployees(DataSet dataSet)
+        public void LoadAllEmployees()
         {
-            employeesRepository.LoadAllEmployees(dataSet);
+            employeesRepository.LoadAllEmployees();
         }
 
 
-        public void AddEmployee(DataSet dataSet, String lastname, String firstname, int locationId, String phoneNumber,
-            String position, int salary, DateTime hireDate)
+        public void AddEmployee(string lastname, string firstname, int locationId, string phoneNumber,
+            string position, int salary, DateTime hireDate)
         {
-            employeesRepository.Save(dataSet, lastname, firstname, locationId, phoneNumber,
-                position, salary, hireDate);
+
+            Employee employee = new(firstname, lastname, locationId, phoneNumber, position, salary, hireDate);
+            employeesRepository.Save(employee);
         }
 
-        public void DeleteEmployee(DataSet dataSet, int employeeId)
+        public void DeleteEmployee(int employeeId)
         {
-            employeesRepository.Delete(dataSet, employeeId);
+            employeesRepository.Delete(employeeId);
         }
 
-        public void UpdateEmployee(DataSet dataSet, int employeeId, String lastname, String firstname, int locationId, String phoneNumber,
-            String position, int salary, DateTime hireDate)
+        public void UpdateEmployee(int employeeId, string lastname, string firstname, int locationId, string phoneNumber,
+            string position, int salary, DateTime hireDate)
         {
-            employeesRepository.Update(dataSet, employeeId, lastname, firstname, locationId, phoneNumber,
-                position, salary, hireDate);
+
+            Employee employee = new(firstname, lastname, locationId, phoneNumber, position, salary, hireDate)
+            {
+                Id = employeeId
+            };
+            employeesRepository.Update(employee);
         }
 
     }

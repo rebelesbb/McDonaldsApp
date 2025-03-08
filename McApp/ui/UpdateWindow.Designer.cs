@@ -101,7 +101,7 @@
             SalaryTextBox.Location = new Point(141, 375);
             SalaryTextBox.Name = "SalaryTextBox";
             SalaryTextBox.Size = new Size(219, 27);
-            SalaryTextBox.TabIndex = 19;
+            SalaryTextBox.TabIndex = 21;
             // 
             // label9
             // 
@@ -119,7 +119,7 @@
             PhoneNumberTextBox.Location = new Point(141, 235);
             PhoneNumberTextBox.Name = "PhoneNumberTextBox";
             PhoneNumberTextBox.Size = new Size(219, 27);
-            PhoneNumberTextBox.TabIndex = 17;
+            PhoneNumberTextBox.TabIndex = 19;
             // 
             // label8
             // 
@@ -183,7 +183,7 @@
             LocationTextBox.Location = new Point(144, 176);
             LocationTextBox.Name = "LocationTextBox";
             LocationTextBox.Size = new Size(219, 27);
-            LocationTextBox.TabIndex = 27;
+            LocationTextBox.TabIndex = 17;
             // 
             // UpdateWindow
             // 

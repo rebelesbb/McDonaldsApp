@@ -1,4 +1,5 @@
-﻿using McApp.service;
+﻿using McApp.domain.validators;
+using McApp.service;
 using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
@@ -16,27 +17,34 @@ namespace McApp.ui
     {
         private McService service;
         private int locationId;
-        private DataSet dataSet;
         public AddWindow()
         {
             InitializeComponent();
         }
-        public void SetService(McService service, DataSet dataSet, int locationId)
+
+        public void SetService(McService service, int locationId)
         {
             this.service = service;
-            this.dataSet = dataSet;
             this.locationId = locationId;
         }
 
         private void AddButton_Click(object sender, EventArgs e)
         {
             if (!LastNameTextBox.Text.IsNullOrEmpty() && !FirstNameTextBox.Text.IsNullOrEmpty() &&
-                !PhoneNumberTextBox.Text.IsNullOrEmpty() && !PositionComboBox.SelectedItem.ToString().IsNullOrEmpty() &&
-                !SalaryTextBox.Text.IsNullOrEmpty() && HireDatePicker.Value != null)
+                !PhoneNumberTextBox.Text.IsNullOrEmpty() && PositionComboBox.SelectedItem != null &&
+                !SalaryTextBox.Text.IsNullOrEmpty())
             {
-                service.AddEmployee(dataSet, LastNameTextBox.Text, FirstNameTextBox.Text, locationId,
-                    PhoneNumberTextBox.Text, PositionComboBox.Text, int.Parse(SalaryTextBox.Text), HireDatePicker.Value);
-                this.Close();
+                try
+                {
+                    service.AddEmployee(LastNameTextBox.Text, FirstNameTextBox.Text, locationId,
+                        PhoneNumberTextBox.Text, PositionComboBox.Text, int.Parse(SalaryTextBox.Text), HireDatePicker.Value);
+                    this.Close();
+                }
+                catch(ValidationException exception)
+                {
+                    MessageBox.Show(exception.Message);
+                }
+                
             }
         }
 

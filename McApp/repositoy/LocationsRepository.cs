@@ -5,19 +5,21 @@ namespace McApp.repositoy;
 
 public class LocationsRepository
 {
-    private readonly String _connectionString;
-    public LocationsRepository(String connectionString)
+    private readonly String connectionString;
+    private readonly DataSet dataSet;
+    public LocationsRepository(String connectionString, DataSet dataSet)
     {
-        this._connectionString = connectionString;
+        this.connectionString = connectionString;
+        this.dataSet = dataSet;
     }
 
-    public void LoadAllLocations(DataSet dataSet)
+    public void LoadAllLocations()
     {
-        using (SqlConnection connection = new SqlConnection(this._connectionString))
+        using (SqlConnection connection = new SqlConnection(this.connectionString))
         {
             String query = "SELECT * FROM Locatii";
             SqlDataAdapter adapter = new SqlDataAdapter(query, connection);
-            adapter.Fill(dataSet, "Locatii");
+            adapter.Fill(this.dataSet, "Locatii");
         }
     }
 }

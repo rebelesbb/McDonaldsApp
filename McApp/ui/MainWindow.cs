@@ -7,45 +7,50 @@ namespace McApp.ui;
 public partial class MainWindow : Form
 {
     private const string ConnectionString = @"Server=DESKTOP-MUSTQB5\SQLEXPRESS;Database=McDonaldsDB;Integrated Security=True;TrustServerCertificate=True;";
-    private McService service;
-    private DataSet _dataSet;
-    private BindingSource employeesBindingSource;
+    private readonly McService service;
+    private readonly DataSet dataSet;
 
     public MainWindow()
     {
+        dataSet = new DataSet();
+        service = new McService(new LocationsRepository(ConnectionString, dataSet),
+            new EmployeesRepository(ConnectionString, dataSet));
         InitializeComponent();
         InitView();
     }
 
     private void InitView()
     {
-        service = new McService(new LocationsRepository(ConnectionString),
-            new EmployeesRepository(ConnectionString));
-        _dataSet = new DataSet();
-
-        service.LoadAllLocations(_dataSet);
-        service.LoadAllEmployees(_dataSet);
+        service.LoadAllLocations();
+        service.LoadAllEmployees();
 
         // Adding foreign key relation
-        DataColumn locationsPK = _dataSet.Tables["Locatii"].Columns["cod_locatie"];
-        DataColumn employeesFK = _dataSet.Tables["Angajati"].Columns["cod_locatie"];
+        DataColumn? locationsPK = dataSet.Tables["Locatii"].Columns["cod_locatie"];
+        DataColumn? employeesFK = dataSet.Tables["Angajati"].Columns["cod_locatie"];
 
-        DataRelation locationsEmployeesRelation = new DataRelation("fk_locations_employees",
-            locationsPK, employeesFK);
+        if (locationsPK != null && employeesFK != null)
+        {
+            DataRelation locationsEmployeesRelation = new("fk_locations_employees",
+                locationsPK, employeesFK);
 
-        _dataSet.Relations.Add(locationsEmployeesRelation);
+            dataSet.Relations.Add(locationsEmployeesRelation);
 
-        //Binding data sources to data grid views
-        BindingSource locationsBindingSource = new BindingSource();
-        locationsBindingSource.DataSource = _dataSet.Tables["Locatii"];
+            //Binding data sources to data grid views
+            BindingSource locationsBindingSource = new()
+            {
+                DataSource = dataSet.Tables["Locatii"]
+            };
 
-        this.employeesBindingSource = new BindingSource();
-        employeesBindingSource.DataSource = locationsBindingSource;
-        employeesBindingSource.DataMember = "fk_locations_employees";
+            BindingSource employeesBindingSource = new BindingSource
+            {
+                DataSource = locationsBindingSource,
+                DataMember = "fk_locations_employees"
+            };
 
 
-        locationsDataGridView.DataSource = locationsBindingSource;
-        employeesDataGridView.DataSource = employeesBindingSource;
+            locationsDataGridView.DataSource = locationsBindingSource;
+            employeesDataGridView.DataSource = employeesBindingSource;
+        }
 
     }
 
@@ -57,9 +62,8 @@ public partial class MainWindow : Form
             int locationId = int.Parse(selectedRow.Cells[0].Value.ToString());
 
             AddWindow addWindow = new AddWindow();
-            addWindow.SetService(this.service, this._dataSet, locationId);
+            addWindow.SetService(this.service, locationId);
             addWindow.Show();
-            //employeesBindingSource.ResetBindings(false);
         }
     }
 
@@ -69,9 +73,15 @@ public partial class MainWindow : Form
         {
             DataGridViewRow selectedRow = employeesDataGridView.SelectedRows[0];
             int emplooyeeId = int.Parse(selectedRow.Cells[0].Value.ToString());
-
-            service.DeleteEmployee(this._dataSet, emplooyeeId);
-            //employeesBindingSource.ResetBindings(false);
+            try
+            {
+                service.DeleteEmployee(emplooyeeId);
+            }
+            catch (Exception exception)
+            {
+                MessageBox.Show(exception.Message);
+            }
+   
         }
     }
 
@@ -80,12 +90,17 @@ public partial class MainWindow : Form
         if (locationsDataGridView.SelectedRows.Count > 0 && employeesDataGridView.SelectedRows.Count > 0)
         {
             DataGridViewRow selectedRow = employeesDataGridView.SelectedRows[0];
-            int emplooyeeId = int.Parse(selectedRow.Cells[0].Value.ToString());
+            int emplooyeeId = int.Parse(selectedRow.Cells["cod_angajat"].Value.ToString());
 
             UpdateWindow updateWindow = new UpdateWindow();
-            updateWindow.SetService(service, _dataSet, emplooyeeId);
+            updateWindow.SetService(service, selectedRow, 
+                int.Parse(locationsDataGridView.SelectedRows[0].Cells["cod_locatie"].Value.ToString()));
             updateWindow.Show();
-            //employeesBindingSource.ResetBindings(false);
+        }
+        else
+        {
+            MessageBox.Show("Selectati un rand din tabelul locatii si unul din tabelul angajati!");
         }
     }
+
 }

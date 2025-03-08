@@ -45,8 +45,10 @@ partial class MainWindow
         locationsDataGridView.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left;
         locationsDataGridView.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
         locationsDataGridView.Location = new Point(29, 59);
+        locationsDataGridView.MultiSelect = false;
         locationsDataGridView.Name = "locationsDataGridView";
         locationsDataGridView.RowHeadersWidth = 51;
+        locationsDataGridView.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
         locationsDataGridView.Size = new Size(437, 476);
         locationsDataGridView.TabIndex = 0;
         locationsDataGridView.Text = "dataGridView1";
@@ -56,8 +58,10 @@ partial class MainWindow
         employeesDataGridView.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
         employeesDataGridView.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
         employeesDataGridView.Location = new Point(490, 59);
+        employeesDataGridView.MultiSelect = false;
         employeesDataGridView.Name = "employeesDataGridView";
         employeesDataGridView.RowHeadersWidth = 51;
+        employeesDataGridView.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
         employeesDataGridView.Size = new Size(441, 334);
         employeesDataGridView.TabIndex = 1;
         // 
